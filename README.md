@@ -8,3 +8,5 @@ Stream k8s events from k8s namespace to Slack channel as a Slack bot using incom
 Pass Slack web hook url for specific Slack channel as `K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL`
 
 Pass k8s namespace as env variable `K8S_EVENTS_STREAMER_NAMESPACE`. Will use `default` if not defined
+
+Enable debug print outs by setting `K8S_EVENTS_STREAMER_DEBUG` env variable to `true`

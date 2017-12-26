@@ -1,20 +1,5 @@
 #!/usr/bin/env python3
 
-"""
-Stream k8s events from k8s namespace to Slack channel as a Slack bot 
-Pass Slack web hook url for specific Slack channel as K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL
-Pass k8s namespace as env variable K8S_EVENTS_STREAMER_NAMESPACE. Will use 'default' if not defined
-
-Usage:
-  status-bot.py --debug
-  status-bot.py --help
-
-Options:
-  --debug          Print debug info
-  --help           Print this message
-
-"""
-from docopt import docopt
 import os
 import json
 import logging
@@ -70,13 +55,12 @@ def format_k8s_event_to_slack_message(event_object):
    return json.dumps(message)
 
 def main():
-   arguments = docopt(__doc__)
 
-   if arguments['--debug']:
+   if os.environ.get('K8S_EVENTS_STREAMER_DEBUG', False):
        logger.setLevel(logging.DEBUG)
        logging.basicConfig(level=logging.DEBUG)
    else:
-       logger.basicConfig(format='%(message)s', level=logging.INFO)
+       logger.setLevel(logging.INFO)
 
    k8s_namespace_name = os.environ.get('K8S_EVENTS_STREAMER_NAMESPACE', 'default')
    slack_web_hook_url = read_env_variable_or_die('K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL')
