@@ -2,3 +2,5 @@
 .gitignore
 env
 setup.sh
+README.md
+k8s-events-to-slack-streamer.yaml

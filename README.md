@@ -10,3 +10,7 @@ Pass Slack web hook url for specific Slack channel as `K8S_EVENTS_STREAMER_INCOM
 Pass k8s namespace as env variable `K8S_EVENTS_STREAMER_NAMESPACE`. Will use `default` if not defined
 
 Enable debug print outs by setting `K8S_EVENTS_STREAMER_DEBUG` env variable to `true`
+
+# Deployment
+
+Intention is that you run streamer container in your k8s cluster. Take a look on example [deployment yaml file](k8s-events-to-slack-streamer.yaml)
