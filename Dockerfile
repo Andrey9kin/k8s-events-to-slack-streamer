@@ -10,5 +10,5 @@ COPY k8s-events-to-slack-streamer.py /app/
 RUN pip install -r /app/requirements.txt
 
 WORKDIR /app
-ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["./k8s-events-to-slack-streamer.py"]
+ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
+CMD ["python3", "./k8s-events-to-slack-streamer.py"]
