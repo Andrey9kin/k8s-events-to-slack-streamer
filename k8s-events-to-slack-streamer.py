@@ -31,7 +31,7 @@ def format_k8s_event_to_slack_message(event_object):
        'attachments': [ {
            'color': color,
            'title': event.message,
-           'text': 'reason: {}'.format(event.reason),
+           'text': 'event type: {}, event reason: {}'.format(event_object['type'], event.reason),
            'footer': 'First time seen: {}, Last time seen: {}, Count: {}'.format(event.first_timestamp.strftime('%d/%m/%Y %H:%M:%S %Z'),
                                                                                  event.last_timestamp.strftime('%d/%m/%Y %H:%M:%S %Z'),
                                                                                  event.count),
