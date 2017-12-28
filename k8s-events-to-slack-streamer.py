@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import time
 import json
 import logging
 import requests
@@ -68,12 +69,16 @@ def main():
    configuration = kubernetes.config.load_incluster_config()
    v1 = kubernetes.client.CoreV1Api()
    k8s_watch = kubernetes.watch.Watch()
+   logger.info("Configuration is OK")
 
-   logger.info("Configuration is OK. Processing events...")
-   for event in k8s_watch.stream(v1.list_namespaced_event, k8s_namespace_name):
-       logger.debug(str(event))
-       message = format_k8s_event_to_slack_message(event)
-       post_slack_message(slack_web_hook_url, message)
+   while True:
+       logger.info("Processing events...")
+       for event in k8s_watch.stream(v1.list_namespaced_event, k8s_namespace_name):
+           logger.debug(str(event))
+           message = format_k8s_event_to_slack_message(event)
+           post_slack_message(slack_web_hook_url, message)
+       logger.info('No more events. Wait 30 sec and check again')
+       time.sleep(30)
 
    logger.info("Done")
 
