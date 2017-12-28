@@ -62,16 +62,20 @@ def main():
    else:
        logger.setLevel(logging.INFO)
 
+   logger.info("Reading configuration...")
    k8s_namespace_name = os.environ.get('K8S_EVENTS_STREAMER_NAMESPACE', 'default')
    slack_web_hook_url = read_env_variable_or_die('K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL')
    configuration = kubernetes.config.load_incluster_config()
    v1 = kubernetes.client.CoreV1Api()
    k8s_watch = kubernetes.watch.Watch()
 
+   logger.info("Configuration is OK. Processing events...")
    for event in k8s_watch.stream(v1.list_namespaced_event, k8s_namespace_name):
        logger.debug(str(event))
        message = format_k8s_event_to_slack_message(event)
        post_slack_message(slack_web_hook_url, message)
+
+   logger.info("Done")
 
 if __name__ == '__main__':
     main()
