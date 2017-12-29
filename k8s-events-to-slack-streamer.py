@@ -23,6 +23,9 @@ def post_slack_message(hook_url, message):
    headers = {'Content-type': 'application/json'}
    r = requests.post(hook_url, data = str(message), headers=headers)
 
+def is_message_type_delete(event_object):
+   return True if event_object['type'] == 'DELETED' else False
+
 def format_k8s_event_to_slack_message(event_object):
    color = '#36a64f'
    event = event_object['object']
@@ -65,6 +68,7 @@ def main():
 
    logger.info("Reading configuration...")
    k8s_namespace_name = os.environ.get('K8S_EVENTS_STREAMER_NAMESPACE', 'default')
+   skip_delete_events = os.environ.get('K8S_EVENTS_STREAMER_SKIP_DELETE_EVENTS', False)
    slack_web_hook_url = read_env_variable_or_die('K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL')
    configuration = kubernetes.config.load_incluster_config()
    v1 = kubernetes.client.CoreV1Api()
@@ -75,6 +79,9 @@ def main():
        logger.info("Processing events...")
        for event in k8s_watch.stream(v1.list_namespaced_event, k8s_namespace_name):
            logger.debug(str(event))
+           if is_message_type_delete(event) and skip_delete_events != False:
+               logger.debug('Event type DELETED and skip deleted events is enabled. Skip this one')
+               continue
            message = format_k8s_event_to_slack_message(event)
            post_slack_message(slack_web_hook_url, message)
        logger.info('No more events. Wait 30 sec and check again')

@@ -12,7 +12,7 @@ spec:
         app: k8s-events-to-slack-streamer
     spec:
       containers:
-      - image: andrey9kin/k8s-events-to-slack-streamer:1.0.0
+      - image: andrey9kin/k8s-events-to-slack-streamer:1.1.0
         imagePullPolicy: Always
         name: k8s-events-to-slack-streamer
         env:
@@ -22,4 +22,3 @@ spec:
 #          value: 'true'
         - name: K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL
           value: your-web-hook-url-here
-      restartPolicy: Always

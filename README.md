@@ -11,6 +11,8 @@ Pass k8s namespace as env variable `K8S_EVENTS_STREAMER_NAMESPACE`. Will use `de
 
 Enable debug print outs by setting `K8S_EVENTS_STREAMER_DEBUG` env variable to `true`
 
+Skip all events of type DELETED by setting `K8S_EVENTS_STREAMER_SKIP_DELETE_EVENTS` env variable to `true`
+
 # Deployment
 
 Intention is that you run streamer container in your k8s cluster. Take a look on example [deployment yaml file](k8s-events-to-slack-streamer.yaml)
