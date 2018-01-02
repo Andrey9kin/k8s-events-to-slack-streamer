@@ -13,6 +13,8 @@ Enable debug print outs by setting `K8S_EVENTS_STREAMER_DEBUG` env variable to `
 
 Skip all events of type DELETED by setting `K8S_EVENTS_STREAMER_SKIP_DELETE_EVENTS` env variable to `true`
 
+Mention users on warning events by setting `K8S_EVENTS_STREAMER_USERS_TO_NOTIFY` to their Slack user names, ex `@andrey9kin @slackbot`
+
 # Deployment
 
 Intention is that you run streamer container in your k8s cluster. Take a look on example [deployment yaml file](k8s-events-to-slack-streamer.yaml)

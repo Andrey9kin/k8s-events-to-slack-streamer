@@ -26,14 +26,11 @@ def post_slack_message(hook_url, message):
 def is_message_type_delete(event_object):
    return True if event_object['type'] == 'DELETED' else False
 
-def format_k8s_event_to_slack_message(event_object):
-   color = '#36a64f'
+def format_k8s_event_to_slack_message(event_object, notify=''):
    event = event_object['object']
-   if event.type == 'Warning':
-       color = '#cc4d26'
    message = { 
        'attachments': [ {
-           'color': color,
+           'color': '#36a64f',
            'title': event.message,
            'text': 'event type: {}, event reason: {}'.format(event_object['type'], event.reason),
            'footer': 'First time seen: {}, Last time seen: {}, Count: {}'.format(event.first_timestamp.strftime('%d/%m/%Y %H:%M:%S %Z'),
@@ -56,6 +53,11 @@ def format_k8s_event_to_slack_message(event_object):
            ],
         }]
    }
+   if event.type == 'Warning':
+       message['attachments'][0]['color'] = '#cc4d26'
+       if notify != '':
+           message['text'] = '{} there is a warning for you to check'.format(notify)
+
    return json.dumps(message)
 
 def main():
@@ -69,6 +71,7 @@ def main():
    logger.info("Reading configuration...")
    k8s_namespace_name = os.environ.get('K8S_EVENTS_STREAMER_NAMESPACE', 'default')
    skip_delete_events = os.environ.get('K8S_EVENTS_STREAMER_SKIP_DELETE_EVENTS', False)
+   users_to_notify = os.environ.get('K8S_EVENTS_STREAMER_USERS_TO_NOTIFY', '')
    slack_web_hook_url = read_env_variable_or_die('K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL')
    configuration = kubernetes.config.load_incluster_config()
    v1 = kubernetes.client.CoreV1Api()
@@ -82,7 +85,7 @@ def main():
            if is_message_type_delete(event) and skip_delete_events != False:
                logger.debug('Event type DELETED and skip deleted events is enabled. Skip this one')
                continue
-           message = format_k8s_event_to_slack_message(event)
+           message = format_k8s_event_to_slack_message(event, users_to_notify)
            post_slack_message(slack_web_hook_url, message)
        logger.info('No more events. Wait 30 sec and check again')
        time.sleep(30)
