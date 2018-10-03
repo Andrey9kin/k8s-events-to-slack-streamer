@@ -2,6 +2,6 @@
 
 [ -d env ] && rm -rf env
 
-virtualenv -p python3 env
+python3 -m venv env
 source env/bin/activate
 pip install -r requirements.txt
