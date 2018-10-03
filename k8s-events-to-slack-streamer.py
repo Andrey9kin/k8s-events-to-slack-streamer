@@ -26,6 +26,9 @@ def post_slack_message(hook_url, message):
 def is_message_type_delete(event_object):
    return True if event_object['type'] == 'DELETED' else False
 
+def is_reason_in_skip_list(event_object, skip_list):
+   return True if event_object['reason'] in skip_list else False
+
 def format_k8s_event_to_slack_message(event_object, notify=''):
    event = event_object['object']
    message = { 
@@ -71,6 +74,7 @@ def main():
    logger.info("Reading configuration...")
    k8s_namespace_name = os.environ.get('K8S_EVENTS_STREAMER_NAMESPACE', 'default')
    skip_delete_events = os.environ.get('K8S_EVENTS_STREAMER_SKIP_DELETE_EVENTS', False)
+   reasons_to_skip = os.environ.get('K8S_EVENTS_STREAMER_LIST_OF_REASONS_TO_SKIP', "").split()
    users_to_notify = os.environ.get('K8S_EVENTS_STREAMER_USERS_TO_NOTIFY', '')
    slack_web_hook_url = read_env_variable_or_die('K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL')
    configuration = kubernetes.config.load_incluster_config()
@@ -84,6 +88,9 @@ def main():
            logger.debug(str(event))
            if is_message_type_delete(event) and skip_delete_events != False:
                logger.debug('Event type DELETED and skip deleted events is enabled. Skip this one')
+               continue
+           if is_reason_in_skip_list(event, reasons_to_skip) == True:
+               logger.debug('Event reason is in the skip list. Skip it')
                continue
            message = format_k8s_event_to_slack_message(event, users_to_notify)
            post_slack_message(slack_web_hook_url, message)
