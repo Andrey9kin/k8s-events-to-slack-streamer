@@ -21,4 +21,4 @@ Mention users on warning events by setting `K8S_EVENTS_STREAMER_USERS_TO_NOTIFY`
 
 # Deployment
 
-Intention is that you run streamer container in your k8s cluster. Take a look on example [deployment yaml file](k8s-events-to-slack-streamer.yaml)
+Intention is that you run streamer container in your k8s cluster. Take a look on example [deployment yaml file](example-deployment.yaml)
