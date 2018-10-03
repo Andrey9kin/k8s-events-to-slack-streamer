@@ -23,11 +23,11 @@ def post_slack_message(hook_url, message):
    headers = {'Content-type': 'application/json'}
    r = requests.post(hook_url, data = str(message), headers=headers)
 
-def is_message_type_delete(event_object):
-   return True if event_object['type'] == 'DELETED' else False
+def is_message_type_delete(event):
+   return True if event['type'] == 'DELETED' else False
 
-def is_reason_in_skip_list(event_object, skip_list):
-   return True if event_object['reason'] in skip_list else False
+def is_reason_in_skip_list(event, skip_list):
+   return True if event['object'].reason in skip_list else False
 
 def format_k8s_event_to_slack_message(event_object, notify=''):
    event = event_object['object']
