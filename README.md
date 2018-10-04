@@ -19,3 +19,7 @@ Configuration is done via env variables that you set in deployment or configmap.
 # Deployment
 
 Intention is that you run streamer container in your k8s cluster. Take a look on example [deployment yaml file](example-deployment.yaml)
+
+# Example message
+
+![Example](/example.png)
