@@ -16,17 +16,17 @@ spec:
         imagePullPolicy: Always
         name: k8s-events-to-slack-streamer
         env:
-#        - name: K8S_EVENTS_STREAMER_NAMESPACE
-#          value: 'default' 
+        - name: K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL
+          value: PUT-WEB-HOOK-URL-HERE
+        - name: K8S_EVENTS_STREAMER_NAMESPACE
+          value: 'default' 
 #        - name: K8S_EVENTS_STREAMER_DEBUG
 #          value: 'true'
-#        - name: K8S_EVENTS_STREAMER_SKIP_DELETE_EVENTS
-#          value: 'true'
+        - name: K8S_EVENTS_STREAMER_SKIP_DELETE_EVENTS
+          value: 'True'
 #        It is imporatnt that you use <> around user names
 #        https://api.slack.com/docs/message-formatting#linking_to_channels_and_users
 #        - name: K8S_EVENTS_STREAMER_USERS_TO_NOTIFY
 #          value: '<@andrey9kin>'
-#        - name: K8S_EVENTS_STREAMER_LIST_OF_REASONS_TO_SKIP
-#          value: 'Scheduled ScalingReplicaSet Pulling Pulled Created Started Killing SuccessfulMountVolume SuccessfulUnMountVolume'
-        - name: K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL
-          value: your-web-hook-url-here
+        - name: K8S_EVENTS_STREAMER_LIST_OF_REASONS_TO_SKIP
+          value: 'Scheduled ScalingReplicaSet Pulling Pulled Created Started Killing SuccessfulMountVolume SuccessfulUnMountVolume'
