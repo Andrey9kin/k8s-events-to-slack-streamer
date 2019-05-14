@@ -4,7 +4,7 @@ import os
 import time
 import json
 import logging
-import requests
+import http.client
 import kubernetes
 
 logger = logging.getLogger()
@@ -18,10 +18,17 @@ def read_env_variable_or_die(env_var_name):
        raise EnvironmentError(message)
    return value
 
+# Slack web hook example
+# https://hooks.slack.com/services/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
 def post_slack_message(hook_url, message):
-   logger.debug('Posting the following message to {}:\n{}'.format(hook_url, message))
-   headers = {'Content-type': 'application/json'}
-   r = requests.post(hook_url, data = str(message), headers=headers)
+    headers = {'Content-type': 'application/json'}
+    connection = http.client.HTTPSConnection('hooks.slack.com')
+    connection.request('POST',
+                       hook_url.replace('https://hooks.slack.com', ''),
+                       json.dumps(message),
+                       headers)
+    response = connection.getresponse()
+    print(response.read().decode())
 
 def is_message_type_delete(event):
    return True if event['type'] == 'DELETED' else False
@@ -31,7 +38,7 @@ def is_reason_in_skip_list(event, skip_list):
 
 def format_k8s_event_to_slack_message(event_object, notify=''):
    event = event_object['object']
-   message = { 
+   message = {
        'attachments': [ {
            'color': '#36a64f',
            'title': event.message,
