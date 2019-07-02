@@ -23,22 +23,21 @@ def read_env_variable_or_die(env_var_name):
 # Slack web hook example
 # https://hooks.slack.com/services/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
 def post_slack_message(hook_url, message):
+    logger.info('Posting the following message to {}:\n{}'.format(hook_url, message))
     headers = {'Content-type': 'application/json'}
     connection = http.client.HTTPSConnection('hooks.slack.com')
     connection.request('POST',
                        hook_url.replace('https://hooks.slack.com', ''),
-                       json.dumps(message),
+                       message,
                        headers)
     response = connection.getresponse()
     print(response.read().decode())
 
 
-def is_message_type_delete(event):
-    return True if event['type'] == 'DELETED' else False
-
-
-def is_reason_in_skip_list(event, skip_list):
-    return True if event['object'].reason in skip_list else False
+# Return even reason in upper case to keep it consistent
+# no matter how API changes
+def get_event_reason(event):
+    return event['object'].reason.upper()
 
 
 def format_k8s_event_to_slack_message(event_object, notify=''):
@@ -83,14 +82,23 @@ def main():
         logging.basicConfig(level=logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
+        logging.basicConfig(level=logging.INFO)
 
     logger.info("Reading configuration...")
     k8s_namespace_name = os.environ.get('K8S_EVENTS_STREAMER_NAMESPACE', 'default')
+    # Uppercase event reasons to skip so we can consistently compare no matter how exactly
+    # user enters them
+    reasons_to_skip = os.environ.get('K8S_EVENTS_STREAMER_LIST_OF_REASONS_TO_SKIP', "").upper().split()
     skip_delete_events = os.environ.get('K8S_EVENTS_STREAMER_SKIP_DELETE_EVENTS', False)
-    reasons_to_skip = os.environ.get('K8S_EVENTS_STREAMER_LIST_OF_REASONS_TO_SKIP', "").split()
+    if skip_delete_events is not False:
+        logger.info(f'K8S_EVENTS_STREAMER_SKIP_DELETE_EVENTS is set to {skip_delete_events}')
+        logger.info('Added SUCCESSFULDELETE to the list of reasons to skip event')
+        reasons_to_skip.append('SUCCESSFULDELETE')
     users_to_notify = os.environ.get('K8S_EVENTS_STREAMER_USERS_TO_NOTIFY', '')
     slack_web_hook_url = read_env_variable_or_die('K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL')
     kubernetes.config.load_incluster_config()
+    # This one is for local testing
+    # kubernetes.config.load_kube_config()
     v1 = kubernetes.client.CoreV1Api()
     k8s_watch = kubernetes.watch.Watch()
     logger.info("Configuration is OK")
@@ -99,11 +107,10 @@ def main():
         logger.info("Processing events...")
         for event in k8s_watch.stream(v1.list_namespaced_event, k8s_namespace_name):
             logger.debug(str(event))
-            if is_message_type_delete(event) and skip_delete_events is not False:
-                logger.debug('Event type DELETED and skip deleted events is enabled. Skip this one')
-                continue
-            if is_reason_in_skip_list(event, reasons_to_skip) is True:
-                logger.debug('Event reason is in the skip list. Skip it')
+            if get_event_reason(event) in reasons_to_skip:
+                logger.info('Event reason is {} and it is in the skip list ({}). So skip it'.format(
+                    get_event_reason(event),
+                    reasons_to_skip))
                 continue
             message = format_k8s_event_to_slack_message(event, users_to_notify)
             post_slack_message(slack_web_hook_url, message)
